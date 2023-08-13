@@ -1,0 +1,519 @@
+
+   import { useEffect, useState } from "react";
+import AuthUser from "../conecciones/authUsers";
+//import moment, { now } from "moment/moment";
+
+import { useNavigate } from "react-router-dom";
+import swal from "sweetalert";
+
+export default function Cotizacion() {
+  const { http } = AuthUser();
+   const navigate = useNavigate();
+  const [userProfile, setUserProfile] = useState("");
+  const [loading, setLoading] = useState(true);
+ // const [currentDate, setCurrentDate] = useState();
+
+  const [formVal2, setFormVal2] = useState([
+    { fechaSolicitud: "", usuario: "", solicita: "", empresas_id: "" },
+  ]);
+
+  const [formVal, setFormVal] = useState([
+    {
+      negocioProyecto: "", motivo: "", tipoUnidad: "",tipoCabina: "",traccion: "",trasmision: "", observaciones: "",
+      marcas_id:"",modelo:"",color:"",tipoCombustible:"",lugarEntrega:"",cantidad:"",
+      plazo:"",kmtMensual:"",GPS:"",
+      tipoCupula:"",neumaticos:"", portaEscala:"",barras:"",alarmaRobo:"",sensorRetroceso:"",laminasSeguridad:"",       
+      mallaLuneta:"",cubrePickup:"",cajaHerramienta:"",cajaKitInvierno:"",pertiga:"",cunas:"",cocoArrastre:"",
+      segundaRuedaRep:"",tiroArrastre:"",},]);
+
+  const addRow = () => {
+    setFormVal([...formVal,{
+        negocioProyecto: "",motivo: "",tipoUnidad: "",tipoCabina: "",traccion: "",trasmision: "",observaciones: "",
+        marcas_id:"",modelo:"",color:"",tipoCombustible:"",lugarEntrega:"",cantidad:"",
+        plazo:"",kmtMensual:"",GPS:"",
+        tipoCupula:"",neumaticos:"", portaEscala:"",barras:"",alarmaRobo:"",sensorRetroceso:"",laminasSeguridad:"",       
+        mallaLuneta:"",cubrePickup:"",cajaHerramienta:"",cajaKitInvierno:"",pertiga:"",cunas:"",cocoArrastre:"",
+        segundaRuedaRep:"",tiroArrastre:""
+      },
+    ]);
+  };
+
+  const onRemove = (i) => {
+    const newForm = [...formVal];
+    newForm.splice(i, 1);
+    setFormVal(newForm);
+  };
+
+  const onHandle = (e, i) => {
+    let newForm = [...formVal];
+    newForm[i][e.target.name] = e.target.value;
+    setFormVal(newForm);
+  };
+
+  const handleInput = (event) => {
+    const { name, value } = event.target;
+    setFormVal2((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  //funcion que envia los datos al router de laravel.
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    // se genera una variable data, la cual contiene los datos de base
+    //contenidos en formVal2 y el array o el arreglo con los input dinamicos
+    const data = {
+      fechaSolicitud: formVal2.fechaSolicitud,
+      usuario: formVal2.usuario,
+      solicita: formVal2.solicita,
+      empresas_id: formVal2.empresas_id,
+      0: formVal,
+    };
+    //console.log("submitData", data);
+    await http.post("/creaCotizacion", data).then((res) => {
+      if(res.data.status===200)
+      {
+        swal("Success",res.data.message,"success");
+        navigate('/dashboard');          
+      }
+      else
+      {
+        setFormVal({...formVal,error_list: res.data.validation_errors})
+      }        
+    }); 
+
+  }
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = () => {
+    http.post("/userProfile").then((res) => {
+      setUserProfile(res.data);
+    });
+  }
+
+  
+
+ /*  useEffect(() => {
+    setCurrentDate(moment().format("DD-MM-YYYY"));
+  }, []); */
+
+
+  return (
+    <div className="container-xxl">
+   
+      <div className="App">
+        <form onSubmit={onSubmit} className="was-validated">
+          {/*+++++++++++++++++++++++ Encabezado+++++++++++++++++++++++++++++ */}
+
+            
+          <div className="card">
+            {/*  {currentDate} */}
+            <div className="card bg-dark text-white">Ingrese Cotizacion</div>
+            <div className="card-body">
+              <div className="input-group">
+                <div className="row">
+            
+
+                  <div className="col">
+                    <select   required name="usuario" className="form-select" id="validationCustom01" onChange={handleInput}>
+                    <option  ></option>
+                      <option value={userProfile.name}>{userProfile.name}</option>                       
+                    </select>
+                    <div className="invalid-feedback">Ingrese usuario</div>
+                  </div>
+
+                  <div className="col">
+                    <input type="text" className="form-control" id="validationCustom02" onChange={handleInput}
+                      value={formVal2.solicita || ""} required name="solicita" placeholder="Quien Solicita?" />
+                       <div className="invalid-feedback">Ingrese Quien solicita</div>
+                  </div>
+                  <div className="col">
+                    <input type="number" className="form-control" id="validationCustom03" onChange={handleInput}
+                      value={formVal2.empresas_id || ""} required name="empresas_id" placeholder="Empresa"/>
+                       <div className="invalid-feedback">Ingrese Empresa</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/*+++++++++++++++++++++++ Fin Encabezado+++++++++++++++++++++++++ */}
+
+
+
+
+          Caracteristicas y accesorios
+          {formVal.map((item, i) => (
+            <div key={i}>
+              <div className="card">
+               
+              
+                  <div className="d-flex">
+                    
+                    <button type="button" className="btn btn-secondary" onClick={addRow}>Agregar otro tipo o modelo de unidad</button>
+                    {i === 0 ? ("") : (<button type="button" className="btn btn-danger" onClick={() => onRemove(i)}>Eliminar</button>)}
+                  </div>
+
+                         
+
+                <div className="card-body">
+                  <div className="input-group">
+                    <div className="row">
+                      <div className="col">
+                        <input type="text" className="form-control" id="validationTooltip01" onChange={(e) => onHandle(e, i)}
+                          value={item.negocioProyecto || ""} required name="negocioProyecto" placeholder="Negocio Proyecto"
+                          data-bs-toggle="popover" title="Ejemplo: Quien usara la unidad. puede ingresar centro de costo"/>
+                      </div>
+
+                      <div className="col">
+                    <select   required name="motivo" className="form-select" id="validationTooltip02"  onChange={(e) => onHandle(e, i)}>
+                    <option  ></option>
+                      <option  value="Aumento">Aumento</option> 
+                      <option  value="Renovación">Renovación</option> 
+                      <option  value="Reposion x Siniestro">Reposion x Siniestro</option>  
+                      <option  value="Licitación">Licitación</option>                      
+                    </select>
+                    <div className="invalid-feedback">Ingrese Motivo</div>
+                  </div>
+
+
+                  <div className="col">
+                    <select value={item.tipoUnidad|| ""}  required name="tipoUnidad" className="form-select" id="validationTooltip03"  onChange={(e) => onHandle(e, i)}>
+                    <option  ></option>
+                      <option  value= "Camioneta">Camioneta</option> 
+                      <option  value= "Furgon">Furgon</option>
+                      <option  value="Automovil">Automovil</option> 
+                      <option  value="Camion 3/4">Camion 3/4</option>  
+                      <option  value="Ambulancia">Ambulancia</option> 
+                      <option  value="Bus">Bus</option>                      
+                    </select>
+                    <div className="invalid-feedback">Tipo Unidad</div>
+                  </div>
+
+
+                  <div className="col">
+                    <select  value={item.tipoCabina|| ""}  required name="tipoCabina" className="form-select" id="validationTooltip04"  onChange={(e) => onHandle(e, i)}>
+                    <option  ></option>
+                      <option  value="Doble">Doble</option> 
+                      <option  value="Simple">Simple</option>                                          
+                    </select>
+                    <div className="invalid-feedback">Tipo Cabina</div>
+                  </div>
+
+
+                  <div className="col">
+                    <select   value={item.traccion|| ""} required name="traccion" className="form-select" id="validationTooltip05"  onChange={(e) => onHandle(e, i)}>
+                    <option  ></option>
+                      <option  value="4x2">4x2</option> 
+                      <option  value="4x4">4x4</option>                                          
+                    </select>
+                    <div className="invalid-feedback">Tracción</div>
+                  </div>
+
+                  <div className="col">
+                    <select value={item.trasmision|| ""}  required name="trasmision" className="form-select" id="validationTooltip06"  onChange={(e) => onHandle(e, i)}>
+                    <option></option>
+                      <option  value="Mecanica">Mecanica</option> 
+                      <option  value="Automatica">Automatica</option>                                          
+                    </select>
+                    <div className="invalid-feedback">Trasmision</div>
+                  </div>
+
+                  <div>.</div>
+
+                  <div className="col">
+                    <select value={item.marcas_id|| ""}  required name="marcas_id" className="form-select" id="validationTooltip07"  onChange={(e) => onHandle(e, i)}>
+                    <option></option>
+                      <option  value="1">Toyota</option> 
+                                                         
+                    </select>
+                    <div className="invalid-feedback">Marca</div>
+                  </div>
+
+                  <div className="col">
+                        <input type="text" className="form-control" id="validationTooltip08" onChange={(e) => onHandle(e, i)}
+                          value={item.modelo || ""} name="modelo" placeholder="Modelo (Opcional)"/>
+                      </div>
+
+                      <div className="col">
+                        <input type="text" className="form-control" id="validationTooltip09" onChange={(e) => onHandle(e, i)}
+                          value={item.color || ""} required name="color" placeholder="Color"/>
+                      </div>
+
+
+                      <div className="col">
+                    <select value={item.tipoCombustible|| ""} required name="tipoCombustible" className="form-select" id="validationTooltip10"  onChange={(e) => onHandle(e, i)}>
+                    <option></option>
+                      <option  value="Diesel">Diesel</option> 
+                      <option  value="Bencina">Bencina</option>
+                      <option  value="Electrico">Electrico</option>  
+                      <option  value="Hibrido">Hibrido</option>                                              
+                    </select>
+                    <div className="invalid-feedback">Tipo Combustible</div>
+                  </div>
+
+
+
+                  <div className="col">
+                    <select value={item.GPS|| ""} required name="GPS" className="form-select" id="validationTooltip15"  onChange={(e) => onHandle(e, i)}>
+                    <option></option>
+                      <option  value="SI">SI</option> 
+                      <option  value="NO">NO</option>                                                                 
+                    </select>
+                    <div className="invalid-feedback">GPS</div>
+                  </div>
+
+
+
+
+
+
+
+
+                  <div className="col">
+                    <select value={item.lugarEntrega|| ""} required name="lugarEntrega" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>
+                    <option></option>
+                      <option  value="1">Santiago</option> 
+                                                                 
+                    </select>
+                    <div className="invalid-feedback">Lugar entrega</div>
+                  </div>
+
+
+                     
+
+                      <div>.</div>
+
+                      <div className="col">
+                        <input type="number" className="form-control" id="validationTooltip13" onChange={(e) => onHandle(e, i)}
+                          value={item.plazo} required name="plazo" placeholder="Plazo en meses" min={12}/>
+                            <label>Plazo en meses</label>
+                      </div>
+
+
+                      <div className="col">
+                        <input type="number" className="form-control" id="validationTooltip14" onChange={(e) => onHandle(e, i)}
+                          value={item.kmtMensual || ""} required name="kmtMensual" placeholder="Kilometros mensuales" />
+                            <label>Kilometros mensuales</label>
+                      </div>
+
+
+                      
+                  <div className="col">
+                        <input type="number" className="form-control" id="validationTooltip12" onChange={(e) => onHandle(e, i)}
+                          value={item.cantidad} required name="cantidad" placeholder="Cantidad" min={1}/>
+                           <label>Cantidad</label>
+                      </div>
+  
+
+                      <div className="col">
+                          <div className="form-floating">
+                            <input type="text" className="form-control" id="validationTooltip16" onChange={(e) => onHandle(e, i)}
+                              value={item.observaciones || ""} required name="observaciones" placeholder="Observaciones" />
+                            <label>Observaciones</label>
+                          </div>
+                        </div>
+                      
+                  </div>
+                     
+
+                      <div className="card">
+            {/*  {currentDate} */}
+            <div className="card bg-dark text-white">Equipamiento Especial (Opcional)</div>
+            <div className="card-body">
+            <div className="input-group">
+                    <div className="row">
+                    
+
+
+                      <div className="col">
+                        <label>Tipo Cupula</label>
+                    <select value={item.tipoCupula|| ""}  name="tipoCupula" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}
+                    placeholder="Tipo Cupula">
+                      <option></option>
+                      <option  value="SAE">SAE</option> 
+                      <option  value="Hueca">Hueca</option>                                                                   
+                    </select>                 
+                  </div>
+
+                  
+                  <div className="col">
+                        <label>Tipo Neumatico</label>
+                    <select value={item.neumaticos|| ""}  name="neumaticos" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}
+                    placeholder="Tipo Neumaticos">
+                      <option></option>
+                      <option  value="AT">AT</option> 
+                      <option  value="MT">MT</option>                                                                   
+                    </select>                 
+                  </div>
+
+                  <div className="col">
+                        <label>Porta Escala</label>
+                    <select value={item.portaEscala|| ""}  name="portaEscala" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}
+                    placeholder="Porta Escala">
+                      <option></option>
+                      <option  value="Estandar">Estandar</option> 
+                      <option  value="Tipo Parron">Tipo Parron</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+
+                  <div className="col">
+                        <label>Barras</label>
+                    <select value={item.barras|| ""} name="barras" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                      
+                      <option  value=""></option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+                  <div className="col">
+                        <label>Alarma Robo</label>
+                    <select value={item.alarmaRobo|| ""} name="alarmaRobo" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  <div className="col">
+                        <label>Sen. Retroceso</label>
+                    <select value={item.sensorRetroceso|| ""} name="sensorRetroceso" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  <div className="col">
+                        <label>Lam. Seguridad</label>
+                    <select value={item.laminasSeguridad|| ""} name="laminasSeguridad" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+                  <div>.</div>
+
+                  <div className="col">
+                        <label>Malla Luneta</label>
+                    <select value={item.mallaLuneta|| ""} name="mallaLuneta" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+
+                  <div className="col">
+                        <label>Cubre Pickup</label>
+                    <select value={item.cubrePickup|| ""} name="cubrePickup" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  <div className="col">
+                        <label>Caja Herramienta</label>
+                    <select value={item.cajaHerramienta|| ""} name="cajaHerramienta" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+                  <div className="col">
+                        <label>Caja Invierno</label>
+                    <select value={item.cajaKitInvierno|| ""} name="cajaKitInvierno" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+
+                  <div className="col">
+                        <label>Pertiga</label>
+                    <select value={item.pertiga|| ""} name="pertiga" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  <div className="col">
+                        <label>Cuñas</label>
+                    <select value={item.cunas|| ""} name="cunas" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  <div className="col">
+                        <label>Coco Arrastre</label>
+                    <select value={item.cocoArrastre|| ""} name="cocoArrastre" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                    
+                           
+                          <div>.</div>
+
+
+                          <div className="col">
+                        <label>2° Rueda Repuesto</label>
+                    <select value={item.segundaRuedaRep|| ""} name="segundaRuedaRep" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+
+                  
+                  <div className="col">
+                        <label>Tiro Arrastre</label>
+                    <select value={item.tiroArrastre|| ""} name="tiroArrastre" className="form-select" id="validationTooltip11"  onChange={(e) => onHandle(e, i)}>                     
+                      <option  value="">-</option> 
+                      <option  value="si">Si</option>                                                                   
+                    </select>                 
+                  </div>
+
+                                                            
+                     
+                    </div>
+                  
+                  </div>
+                 
+                </div>
+                
+              </div>
+            
+            </div>
+
+            </div>
+
+            </div>
+            </div>
+
+
+            
+          ))}         
+         
+          <div className="d-grid gap-2">
+  <button  className="btn btn-secondary " type="submit">Enviar Cotizacion</button>  
+         
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
