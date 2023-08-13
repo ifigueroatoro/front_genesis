@@ -92,7 +92,7 @@ if(loading){
               role="status"
               aria-hidden="true"
             ></span>
-          Trayendo usuario  <h3><FiUser/> </h3> 
+          Trayendo usuario para editar  <h3><FiUser/> </h3> 
           </button>
         </div>
       );
