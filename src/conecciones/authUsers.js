@@ -38,7 +38,9 @@ export default function AuthUser(){
     }
 
     const http=axios.create({
-        baseURL:"http://localhost/back_genesis/public/api/",
+        
+        baseURL:"https://github.com/ifigueroatoro/back_genesis.git/",
+      //  baseURL:"http://localhost/back_genesis/public/api/",
      //   baseURL:"http://190.163.158.117/back_genesis/public/api/",
         headers:{
             "Content-type" : "application/json", 
